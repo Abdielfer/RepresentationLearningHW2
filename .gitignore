@@ -9,6 +9,10 @@ __pycache__/
 *.pkl
 *.csv
 *.h5
+*.npz
+
+#Data
+*.npz
 
 # Distribution / packaging
 .Python
