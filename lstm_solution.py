@@ -3,8 +3,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
- # este es un teste de conexion con Cllab
-
 
 class LSTM(nn.Module):
     def __init__(
@@ -73,11 +71,31 @@ class LSTM(nn.Module):
             - h (`torch.FloatTensor` of shape `(num_layers, batch_size, hidden_size)`)
             - c (`torch.FloatTensor` of shape `(num_layers, batch_size, hidden_size)`)
         """
+        #extracting shapes for initialize "out" and "h_last"
+        #print(inputs.shape)
+        batch_size = inputs.shape[0]
+        sequence_length = inputs.shape[1]
 
-        # ==========================
-        # TODO: Write your code here
-        # ==========================
-        pass
+        out = torch.empty((batch_size, sequence_length, self.vocabulary_size), dtype=torch.float32)
+        h_last = torch.empty((self.num_layers, batch_size, self.hidden_size),dtype=torch.float32)
+        c_last = torch.empty((self.num_layers, batch_size, self.hidden_size),dtype=torch.float32)
+        out,(h_last,c_last) = self.lstm(self.embedding(inputs),hidden_states)
+        out = self.classifier(out)
+        print(out.shape)
+        '''
+        self.embedding = nn.Embedding(
+            vocabulary_size, embedding_size, padding_idx=0, _weight=_embedding_weight
+        )
+        self.lstm = nn.LSTM(
+            embedding_size, hidden_size, num_layers=num_layers, batch_first=True
+        )
+        self.classifier = nn.Sequential(
+            nn.Linear(hidden_size, embedding_size),
+            nn.ReLU(),
+            nn.Linear(embedding_size, vocabulary_size, bias=False),
+        )
+        '''
+        return out, (h_last,c_last)
 
     def loss(self, log_probas, targets, mask):
         """Loss function.
