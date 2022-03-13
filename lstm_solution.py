@@ -72,14 +72,12 @@ class LSTM(nn.Module):
             - h (`torch.FloatTensor` of shape `(num_layers, batch_size, hidden_size)`)
             - c (`torch.FloatTensor` of shape `(num_layers, batch_size, hidden_size)`)
         """
-        #extracting shapes for initialize "out" and "h_last"
         batch_size = inputs.shape[0]
         sequence_length = inputs.shape[1]
         out = torch.empty((batch_size, sequence_length, self.vocabulary_size), dtype=torch.float16)
         h_last = torch.empty((self.num_layers, batch_size, self.hidden_size),dtype=torch.float16)
         c_last = torch.empty((self.num_layers, batch_size, self.hidden_size),dtype=torch.float16)
         out,(h_last,c_last) = self.lstm(self.embedding(inputs),hidden_states)
-        #out = self.classifier(out)
         out = F.log_softmax(self.classifier(out), dim=-1)
         return out,(h_last,c_last)
 
