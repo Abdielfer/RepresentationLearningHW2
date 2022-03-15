@@ -1,4 +1,6 @@
 from cmath import log, log10
+from curses import raw
+from sqlite3 import Row
 import numpy as np
 import torch
 import torch.nn as nn
@@ -78,7 +80,8 @@ class LSTM(nn.Module):
         h_last = torch.empty((self.num_layers, batch_size, self.hidden_size),dtype=torch.float16)
         c_last = torch.empty((self.num_layers, batch_size, self.hidden_size),dtype=torch.float16)
         out,(h_last,c_last) = self.lstm(self.embedding(inputs),hidden_states)
-        out = F.log_softmax(self.classifier(out), dim=-1)
+        classifier = self.classifier(out)
+        out = F.log_softmax(classifier, dim=-1)
         return out,(h_last,c_last)
 
     def loss(self, log_probas, targets, mask):
@@ -106,13 +109,19 @@ class LSTM(nn.Module):
         loss (`torch.FloatTensor` scalar)
             The scalar loss, corresponding to the (mean) negative log-likelihood.
         """
+        bathcSIze = targets.shape[0]
+        predictedProb = torch.zeros_like(log_probas)
+        my_targets = torch.unsqueeze(targets,1)
+        my_targets = torch.transpose(my_targets,2,1)
+        predictedProb = torch.gather(log_probas,2,my_targets)
+        predictedProb =  torch.squeeze(predictedProb,dim=2)
+        predictedProb = torch.multiply(predictedProb,mask)       
+        meanBySequence = torch.zeros((bathcSIze))
+        for i in range(bathcSIze):
+            nn = torch.count_nonzero(mask[i]) 
+            meanBySequence[i] = torch.sum(predictedProb[i])/nn
 
-        # ==========================
-        # TODO: Write your code here
-        # ==========================
-
-
-        pass
+        return -meanBySequence.mean()
 
     def initial_states(self, batch_size, device=None):
         if device is None:
