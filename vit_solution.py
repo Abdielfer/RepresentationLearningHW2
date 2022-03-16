@@ -38,11 +38,16 @@ class LayerNorm(nn.Module):
         """
         out = torch.zeros_like(inputs)
         input_mean = torch.mean(inputs,-1,keepdim=True)
+        
         input_variance = torch.sqrt(torch.var(inputs, -1, unbiased= False,keepdim=True))
+
         normalized_inputs = torch.sub(inputs, input_mean)
+        
         normalized_inputs = torch.div(normalized_inputs,input_variance)
+       
         out = torch.multiply(normalized_inputs,self.weight) + self.bias
         return out
+
     def reset_parameters(self):
         nn.init.ones_(self.weight)
         nn.init.zeros_(self.bias)
