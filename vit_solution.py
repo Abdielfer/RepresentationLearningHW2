@@ -55,11 +55,13 @@ class MultiHeadedAttention(nn.Module):
         self.head_size = head_size
         self.num_heads = num_heads
         self.sequence_length = sequence_length
-
+        
         # ==========================
         # TODO: Write your code here
         # ==========================
-
+        self.dimention = self.head_size*self.num_heads
+        self.linearTransformation = nn.Linear(self.dimention,self.dimention)
+        
 
     def get_attention_weights(self, queries, keys):
         """Compute the attention weights.
@@ -102,7 +104,6 @@ class MultiHeadedAttention(nn.Module):
             for k in range(self.num_heads):   
                 multlipicatedWeight = (queries[i][k]).matmul(transposedKeys[i][k])
                 out[i][k] = F.softmax(torch.div(multlipicatedWeight,sqrt_HSize), 1)
-        print(f"Out shape from get_att_weoght:  {out.shape}")
         return out
 
     def apply_attention(self, queries, keys, values):
@@ -148,7 +149,6 @@ class MultiHeadedAttention(nn.Module):
         # ==========================       
         weights = self.get_attention_weights(queries, keys)
         attended_values = weights.matmul(values)
-        print(f"attended_values:  {attended_values.shape}")
         return self.merge_heads(attended_values)
 
     def split_heads(self, tensor):
@@ -225,7 +225,7 @@ class MultiHeadedAttention(nn.Module):
 
             Y = attention(Q, K, V)       # Attended values (concatenated for all heads)
             outputs = Y * W_{Y} + b_{Y}  # Linear projection
-
+        
         Here "*" is the matrix multiplication.
 
         Parameters
@@ -245,7 +245,13 @@ class MultiHeadedAttention(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-        pass
+        queries = self.split_heads(self.linearTransformation(hidden_states))
+        keys = self.split_heads(self.linearTransformation(hidden_states))
+        values = self.split_heads(self.linearTransformation(hidden_states))
+        out_attention = self.apply_attention(queries,keys,values)
+        output = self.linearTransformation(out_attention)
+        return output
+    
 
 class PostNormAttentionBlock(nn.Module):
     
