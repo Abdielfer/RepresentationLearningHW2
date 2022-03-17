@@ -208,14 +208,11 @@ class MultiHeadedAttention(nn.Module):
             vectors. Here `dim` is the same dimension as the one in the
             definition of the input `tensor` above.
         """
-        print(tensor.shape)
         # ==========================
         # TODO: Write your code here
         # ==========================
-        
-        
-        
-        pass
+        batchSIze = tensor.shape[0]
+        return torch.reshape(torch.permute(tensor,(0,2,1,3)),(batchSIze,self.sequence_length,-1))
 
     def forward(self, hidden_states):
         """Multi-headed attention.
