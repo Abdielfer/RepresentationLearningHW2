@@ -59,7 +59,7 @@ class MultiHeadedAttention(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-        
+
 
     def get_attention_weights(self, queries, keys):
         """Compute the attention weights.
@@ -94,7 +94,6 @@ class MultiHeadedAttention(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-
 
         pass
 
@@ -141,11 +140,7 @@ class MultiHeadedAttention(nn.Module):
         # ==========================
        # "queries (`torch.FloatTensor` of shape `(batch_size, num_heads, sequence_length, head_size)`)"
         batch_size = queries.shape[0]
-
-        num_heads = queries.shape[1]
-        sequence_length = queries.shape[2]
-        head_size = queries.shape[3]
-        out = torch.empty_like((batch_size, sequence_length,num_heads*head_size))
+        out = torch.empty_like((batch_size, self.sequence_length,self.num_heads*self.head_size))
         l = len(queries.shape)
         print(f"Este es l {l}")
 
@@ -183,11 +178,13 @@ class MultiHeadedAttention(nn.Module):
             vectors. Here `dim` is the same dimension as the one in the
             definition of the input `tensor` above.
         """
-
         # ==========================
         # TODO: Write your code here
         # ==========================
-        pass
+        batchSIze = tensor.shape[0]
+        dim = int(tensor.shape[2]/self.num_heads) 
+        out = torch.reshape(tensor,(batchSIze,self.sequence_length,self.num_heads,-1))
+        return torch.permute(out,(0,2,1,3))
 
     def merge_heads(self, tensor):
         """Merge the head vectors.
@@ -211,10 +208,13 @@ class MultiHeadedAttention(nn.Module):
             vectors. Here `dim` is the same dimension as the one in the
             definition of the input `tensor` above.
         """
-
+        print(tensor.shape)
         # ==========================
         # TODO: Write your code here
         # ==========================
+        
+        
+        
         pass
 
     def forward(self, hidden_states):
