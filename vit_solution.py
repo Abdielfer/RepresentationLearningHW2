@@ -59,6 +59,7 @@ class MultiHeadedAttention(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
+        
 
     def get_attention_weights(self, queries, keys):
         """Compute the attention weights.
@@ -93,6 +94,8 @@ class MultiHeadedAttention(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
+
+
         pass
 
     def apply_attention(self, queries, keys, values):
@@ -136,7 +139,26 @@ class MultiHeadedAttention(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-        pass
+       # "queries (`torch.FloatTensor` of shape `(batch_size, num_heads, sequence_length, head_size)`)"
+        batch_size = queries.shape[0]
+
+        num_heads = queries.shape[1]
+        sequence_length = queries.shape[2]
+        head_size = queries.shape[3]
+        out = torch.empty_like((batch_size, sequence_length,num_heads*head_size))
+        l = len(queries.shape)
+        print(f"Este es l {l}")
+
+        for i in range(batch_size):
+          
+          
+          
+          out[i]= F.softmax(queries)
+
+
+
+
+        return out
 
     def split_heads(self, tensor):
         """Split the head vectors.
