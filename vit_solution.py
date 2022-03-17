@@ -102,6 +102,7 @@ class MultiHeadedAttention(nn.Module):
             for k in range(self.num_heads):   
                 multlipicatedWeight = (queries[i][k]).matmul(transposedKeys[i][k])
                 out[i][k] = F.softmax(torch.div(multlipicatedWeight,sqrt_HSize), 1)
+        print(f"Out shape from get_att_weoght:  {out.shape}")
         return out
 
     def apply_attention(self, queries, keys, values):
@@ -144,23 +145,11 @@ class MultiHeadedAttention(nn.Module):
 
         # ==========================
         # TODO: Write your code here
-        # ==========================
-       # "queries (`torch.FloatTensor` of shape `(batch_size, num_heads, sequence_length, head_size)`)"
-        batch_size = queries.shape[0]
-        out = torch.empty_like((batch_size, self.sequence_length,self.num_heads*self.head_size))
-        l = len(queries.shape)
-        print(f"Este es l {l}")
-
-        for i in range(batch_size):
-          
-          
-          
-          out[i]= F.softmax(queries)
-
-
-
-
-        return out
+        # ==========================       
+        weights = self.get_attention_weights(queries, keys)
+        attended_values = weights.matmul(values)
+        print(f"attended_values:  {attended_values.shape}")
+        return self.merge_heads(attended_values)
 
     def split_heads(self, tensor):
         """Split the head vectors.
