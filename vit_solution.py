@@ -59,8 +59,8 @@ class MultiHeadedAttention(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-        self.dimention = self.head_size*self.num_heads
-        self.linearTransformation = nn.Linear(self.dimention,self.dimention)
+        #self.dimention = self.num_heads*self.head_size
+        self.linearTransformation = nn.Linear(self.num_heads*self.head_size,self.num_heads*self.head_size)
         
 
     def get_attention_weights(self, queries, keys):

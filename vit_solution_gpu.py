@@ -17,6 +17,7 @@ class LayerNorm(nn.Module):
         self.bias = nn.Parameter(torch.Tensor(hidden_size))
 
         self.reset_parameters()
+        self.divice = "cuda"
 
     def forward(self, inputs):
         """Layer Normalization.
@@ -42,7 +43,7 @@ class LayerNorm(nn.Module):
         normalized_inputs = torch.sub(inputs, input_mean)  
         normalized_inputs = torch.div(normalized_inputs,input_variance)
         out = torch.multiply(normalized_inputs,self.weight) + self.bias
-        return out
+        return out.cuda()
 
     def reset_parameters(self):
         nn.init.ones_(self.weight)
@@ -104,7 +105,7 @@ class MultiHeadedAttention(nn.Module):
             for k in range(self.num_heads):   
                 multlipicatedWeight = (queries[i][k]).matmul(transposedKeys[i][k])
                 out[i][k] = F.softmax(torch.div(multlipicatedWeight,sqrt_HSize), 1)
-        return out
+        return out.cuda()
 
     def apply_attention(self, queries, keys, values):
         """Apply the attention.
@@ -180,7 +181,7 @@ class MultiHeadedAttention(nn.Module):
         batchSIze = tensor.shape[0]
         dim = int(tensor.shape[2]/self.num_heads) 
         out = torch.reshape(tensor,(batchSIze,self.sequence_length,self.num_heads,-1))
-        return torch.permute(out,(0,2,1,3))
+        return (torch.permute(out,(0,2,1,3))).cuda()
 
     def merge_heads(self, tensor):
         """Merge the head vectors.
@@ -208,7 +209,7 @@ class MultiHeadedAttention(nn.Module):
         # TODO: Write your code here
         # ==========================
         batchSIze = tensor.shape[0]
-        return torch.reshape(torch.permute(tensor,(0,2,1,3)),(batchSIze,self.sequence_length,-1))
+        return (torch.reshape(torch.permute(tensor,(0,2,1,3)),(batchSIze,self.sequence_length,-1))).cuda()
 
     def forward(self, hidden_states):
         """Multi-headed attention.
@@ -286,7 +287,7 @@ class PostNormAttentionBlock(nn.Module):
         attention_outputs = self.layer_norm_1(x + attention_outputs)
         outputs=self.linear(attention_outputs)
         outputs = self.layer_norm_2(outputs+attention_outputs)
-        return outputs
+        return outputs.cuda()
 
 class PreNormAttentionBlock(nn.Module):
     
@@ -329,7 +330,7 @@ class PreNormAttentionBlock(nn.Module):
         thirsd_normaliz = self.layer_norm_2(second_addition)
         forth_linear = self.linear(thirsd_normaliz)
         out = second_addition + forth_linear
-        return out
+        return out.cuda()
 
 
 
@@ -396,7 +397,7 @@ class VisionTransformer(nn.Module):
             outputs = unfoldedImage.permute(0,2,1)
         else:
             outputs = unfoldedImage.reshape(dim_1,dim_2,dim_3)
-        return outputs
+        return outputs.cuda()
 
 
     def forward(self, x):
@@ -433,7 +434,7 @@ class VisionTransformer(nn.Module):
         #Take the cls token representation and send it to mlp_head
         out = self.mlp_head(x_transformed[:,0])
         #print(f"This is out: {out.shape}")
-        return out
+        return out.cuda()
    
 
 
@@ -450,4 +451,4 @@ class VisionTransformer(nn.Module):
         # TODO: Write your code here
         # ==========================
         loss = nn.CrossEntropyLoss()
-        return loss(preds,labels)
+        return loss(preds,labels).cuda()
