@@ -16,7 +16,8 @@ import torchvision
 from torchvision.datasets import CIFAR10
 from torchvision import transforms
 
-from vit_solution import VisionTransformer
+#from vit_solution import VisionTransformer
+from vit_solution_gpu import VisionTransformer
 
 from utils.torch_utils import seed_experiment, to_device
 #from utils.data_utils import save_logs
