@@ -381,7 +381,17 @@ class VisionTransformer(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-        pass
+        unfoldFunc = torch.nn.Unfold((patch_size,patch_size),stride=patch_size)
+        unfoldedImage  = unfoldFunc(image)
+        dim_1 = unfoldedImage.shape[0]
+        dim_2 = unfoldedImage.shape[1]
+        dim_3 = 2*patch_size, 2*patch_size 
+        # #print(flatten_channels)
+        if flatten_channels :
+            outputs = unfoldedImage.permute(0,2,1)
+        else:
+            outputs = unfoldedImage.reshape(dim_1,dim_2,dim_3)
+        return outputs
 
 
     def forward(self, x):
