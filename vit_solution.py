@@ -250,6 +250,8 @@ class MultiHeadedAttention(nn.Module):
         values = self.split_heads(self.linearTransformation(hidden_states))
         out_attention = self.apply_attention(queries,keys,values)
         output = self.linearTransformation(out_attention)
+        
+        #print(F"output shape: {output.shape}")
         return output
     
 
@@ -280,12 +282,9 @@ class PostNormAttentionBlock(nn.Module):
         
         
     def forward(self, x):
-       
         attention_outputs = self.attn(x)
-        #print(inp_x.shape)
         attention_outputs = self.layer_norm_1(x + attention_outputs)
         outputs=self.linear(attention_outputs)
-
         outputs = self.layer_norm_2(outputs+attention_outputs)
         return outputs
 
@@ -324,7 +323,13 @@ class PreNormAttentionBlock(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-        pass
+
+        first_att = self.attn(self.layer_norm_1(x))
+        second_addition =x + first_att
+        thirsd_normaliz = self.layer_norm_2(second_addition)
+        forth_linear = self.linear(thirsd_normaliz)
+        out = second_addition + forth_linear
+        return out
 
 
 
@@ -401,7 +406,7 @@ class VisionTransformer(nn.Module):
 
         Parameters
         ----------
-        x - (`torch.LongTensor` of shape `(batch_size, channels,height , width)`)
+        x - (`torch.LongTensor` of shape `(batch_size, channels, height , width)`)
             The input tensor containing the iamges.
 
         Returns
@@ -420,22 +425,18 @@ class VisionTransformer(nn.Module):
         x = x + self.pos_embedding[:,:T+1]
         
         #Add dropout and then the transformer
-        
-        # ==========================
-        # TODO: Write your code here
-        # ==========================
-        
-
+        #print(f"This is x : {x.shape}")
+        x = self.dropout(x)
+        #print(f"This is x after dropOut: {x.shape}")
+        x_transformed = self.transformer(x)
+        #print(f"This is x_transformed : {x_transformed.shape}")
         #Take the cls token representation and send it to mlp_head
+        out = self.mlp_head(x_transformed[:,0])
+        #print(f"This is out: {out.shape}")
+        return out
+   
 
-        # ==========================
-        # TODO: Write your code here
-        # ==========================
-        
-        
-    
-        
-        pass
+
     def loss(self,preds,labels):
         '''Loss function.
 
@@ -448,4 +449,5 @@ class VisionTransformer(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-        pass
+        loss = nn.CrossEntropyLoss()
+        return loss(preds,labels)
