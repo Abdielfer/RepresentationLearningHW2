@@ -5,13 +5,13 @@ import json
 def save_logs(
         args,
         train_losses,
-        train_ppls,
+        train_accs,
         train_times,
         valid_losses,
-        valid_ppls,
+        valid_accs,
         valid_times,
         test_loss,
-        test_ppl,
+        test_accs,
         test_time
     ):
     log_dir = os.path.join(args.log_dir, args.exp_id)
@@ -25,18 +25,18 @@ def save_logs(
     with open(os.path.join(log_dir, "train_loss.txt"), "w") as f:
         f.write("\n".join(str(item) for item in train_losses))
     with open(os.path.join(log_dir, "train_ppl.txt"), "w") as f:
-        f.write("\n".join(str(item) for item in train_ppls))
+        f.write("\n".join(str(item) for item in train_accs))
     with open(os.path.join(log_dir, "train_time.txt"), "w") as f:
         f.write("\n".join(str(item) for item in train_times))
     with open(os.path.join(log_dir, "valid_loss.txt"), "w") as f:
         f.write("\n".join(str(item) for item in valid_losses))
     with open(os.path.join(log_dir, "valid_ppl.txt"), "w") as f:
-        f.write("\n".join(str(item) for item in valid_ppls))
+        f.write("\n".join(str(item) for item in valid_accs))
     with open(os.path.join(log_dir, "valid_time.txt"), "w") as f:
         f.write("\n".join(str(item) for item in valid_times))
     with open(os.path.join(log_dir, "test_loss.txt"), "w") as f:
         f.write(f"{test_loss}\n")
     with open(os.path.join(log_dir, "test_ppl.txt"), "w") as f:
-        f.write(f"{test_ppl}\n")
+        f.write(f"{test_accs}\n")
     with open(os.path.join(log_dir, "test_time.txt"), "w") as f:
         f.write(f"{test_time}\n")
