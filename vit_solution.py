@@ -61,11 +61,8 @@ class MultiHeadedAttention(nn.Module):
         # ==========================
         bias = True
         self.dimention = self.num_heads*self.head_size
-        self.W_q = nn.Linear(self.dimention, self.dimention, bias=bias)
-        self.W_k = nn.Linear(self.dimention, self.dimention, bias=bias)
-        self.W_v = nn.Linear(self.dimention, self.dimention, bias=bias)
-        self.W_o = nn.Linear(self.dimention, self.dimention*3, bias=bias)
-        #self.linearTransformation = nn.Linear(self.dimention,self.dimention,bias=True)
+        self.W_hidden_states = nn.Linear(self.dimention, 3*self.dimention, bias=bias)
+        self.linearTransformation = nn.Linear(self.dimention,self.dimention, bias=bias)
         
 
     def get_attention_weights(self, queries, keys):
@@ -249,23 +246,11 @@ class MultiHeadedAttention(nn.Module):
 
         # ==========================
         # TODO: Write your code here
-        # ==========================
-        # queries = self.W_q(hidden_states.shape[0])
-        # keys = self.W_k(hidden_states.shape[0])
-        # values = self.W_v(hidden_states.shape[0])
-        
-        queries,keys,values = torch.chunk(hidden_states,3,-1) 
-        queries = self.split_heads(queries)
-        queries = self.W_q(queries)
-        keys= self.W_k(keys)
-        keys = self.split_heads(keys) 
-        values = self.W_v(values)
-        values = self.split_heads(values)
-        out_attention = self.apply_attention(queries,keys,values)
-        output = self.W_o(out_attention)
-        
-        #print(F"output shape: {output.shape}")
-        return output
+        # ========================== 
+        hState_Splited_weighted = self.split_heads(self.W_hidden_states(hidden_states))
+        query, keys, values = hState_Splited_weighted.chunk(3, dim = -1)
+        attended = self.apply_attention(query, keys, values )
+        return self.linearTransformation(attended)
     
 
 class PostNormAttentionBlock(nn.Module):
@@ -433,11 +418,17 @@ class VisionTransformer(nn.Module):
         x = self.input_layer(x)
         
         # Add CLS token and positional encoding
+        # ==========================
+        # TODO: Write your code here
+        # ==========================
         cls_token = self.cls_token.repeat(B, 1, 1)
         x = torch.cat([cls_token, x], dim=1)
         x = x + self.pos_embedding[:,:T+1]
         
         #Add dropout and then the transformer
+        # ==========================
+        # TODO: Write your code here
+        # ==========================
         #print(f"This is x : {x.shape}")
         x = self.dropout(x)
         #print(f"This is x after dropOut: {x.shape}")

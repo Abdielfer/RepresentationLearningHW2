@@ -60,15 +60,11 @@ class MultiHeadedAttention(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-        # bias = True
-        # self.dimention = self.head_size*self.num_heads
-        # self.W_q = nn.Linear(query, self.dimention, bias=bias)
-        # self.W_k = nn.Linear(key, self.dimention, bias=bias)
-        # self.W_v = nn.Linear(value, self.dimention, bias=bias)
-        # self.W_o = nn.Linear(num_hiddens, self.dimention, bias=bias)
-        
-        self.linearTransformation = nn.Linear()
-        
+        bias = True
+        self.dimention = self.num_heads*self.head_size
+        self.W_hidden_states = nn.Linear(self.dimention, 3*self.dimention, bias=bias)
+        self.linearTransformation = nn.Linear(self.dimention,self.dimention, bias=bias)
+
 
     def get_attention_weights(self, queries, keys):
         """Compute the attention weights.
@@ -252,16 +248,11 @@ class MultiHeadedAttention(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-        queries,keys,values = torch.trunc(hidden_states,3)
-
-        queries = self.linearTransformation(self.split_heads(queries))
-        keys = self.linearTransformation(self.split_heads(keys))
-        values = self.linearTransformation(self.split_heads(values))
-        out_attention = self.apply_attention(queries,keys,values)
-        output = self.linearTransformation(out_attention)
-        
-        #print(F"output shape: {output.shape}")
-        return output
+        hState_Splited_weighted = self.split_heads(self.W_hidden_states(hidden_states))
+        query, keys, values = hState_Splited_weighted.chunk(3, dim = -1)
+        attended = self.apply_attention(query, keys, values )
+        return self.linearTransformation(attended)
+    
     
 
 class PostNormAttentionBlock(nn.Module):
