@@ -59,8 +59,13 @@ class MultiHeadedAttention(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-        #self.dimention = self.num_heads*self.head_size
-        self.linearTransformation = nn.Linear(self.num_heads*self.head_size,self.num_heads*self.head_size)
+        bias = True
+        self.dimention = self.num_heads*self.head_size
+        self.W_q = nn.Linear(self.dimention, self.dimention, bias=bias)
+        self.W_k = nn.Linear(self.dimention, self.dimention, bias=bias)
+        self.W_v = nn.Linear(self.dimention, self.dimention, bias=bias)
+        self.W_o = nn.Linear(self.dimention, self.dimention*3, bias=bias)
+        #self.linearTransformation = nn.Linear(self.dimention,self.dimention,bias=True)
         
 
     def get_attention_weights(self, queries, keys):
@@ -148,8 +153,8 @@ class MultiHeadedAttention(nn.Module):
         # TODO: Write your code here
         # ==========================       
         weights = self.get_attention_weights(queries, keys)
-        attended_values = weights.matmul(values)
-        return self.merge_heads(attended_values)
+        attention = weights.matmul(values)
+        return self.merge_heads(attention)
 
     def split_heads(self, tensor):
         """Split the head vectors.
@@ -178,7 +183,7 @@ class MultiHeadedAttention(nn.Module):
         # TODO: Write your code here
         # ==========================
         batchSIze = tensor.shape[0]
-        dim = int(tensor.shape[2]/self.num_heads) 
+        #dim = int(tensor.shape[2]/self.num_heads) 
         out = torch.reshape(tensor,(batchSIze,self.sequence_length,self.num_heads,-1))
         return torch.permute(out,(0,2,1,3))
 
@@ -245,11 +250,19 @@ class MultiHeadedAttention(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-        queries = self.split_heads(self.linearTransformation(hidden_states))
-        keys = self.split_heads(self.linearTransformation(hidden_states))
-        values = self.split_heads(self.linearTransformation(hidden_states))
+        # queries = self.W_q(hidden_states.shape[0])
+        # keys = self.W_k(hidden_states.shape[0])
+        # values = self.W_v(hidden_states.shape[0])
+        
+        queries,keys,values = torch.chunk(hidden_states,3,-1) 
+        queries = self.split_heads(queries)
+        queries = self.W_q(queries)
+        keys= self.W_k(keys)
+        keys = self.split_heads(keys) 
+        values = self.W_v(values)
+        values = self.split_heads(values)
         out_attention = self.apply_attention(queries,keys,values)
-        output = self.linearTransformation(out_attention)
+        output = self.W_o(out_attention)
         
         #print(F"output shape: {output.shape}")
         return output

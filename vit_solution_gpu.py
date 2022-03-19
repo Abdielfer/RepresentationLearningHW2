@@ -60,8 +60,14 @@ class MultiHeadedAttention(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-        self.dimention = self.head_size*self.num_heads
-        self.linearTransformation = nn.Linear(self.dimention,self.dimention)
+        # bias = True
+        # self.dimention = self.head_size*self.num_heads
+        # self.W_q = nn.Linear(query, self.dimention, bias=bias)
+        # self.W_k = nn.Linear(key, self.dimention, bias=bias)
+        # self.W_v = nn.Linear(value, self.dimention, bias=bias)
+        # self.W_o = nn.Linear(num_hiddens, self.dimention, bias=bias)
+        
+        self.linearTransformation = nn.Linear()
         
 
     def get_attention_weights(self, queries, keys):
@@ -246,9 +252,11 @@ class MultiHeadedAttention(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-        queries = self.split_heads(self.linearTransformation(hidden_states))
-        keys = self.split_heads(self.linearTransformation(hidden_states))
-        values = self.split_heads(self.linearTransformation(hidden_states))
+        queries,keys,values = torch.trunc(hidden_states,3)
+
+        queries = self.linearTransformation(self.split_heads(queries))
+        keys = self.linearTransformation(self.split_heads(keys))
+        values = self.linearTransformation(self.split_heads(values))
         out_attention = self.apply_attention(queries,keys,values)
         output = self.linearTransformation(out_attention)
         
