@@ -101,11 +101,14 @@ class MultiHeadedAttention(nn.Module):
         batch_size = queries.shape[0]
         sqrt_HSize = math.sqrt(self.head_size)
         transposedKeys = torch.transpose(keys,2,3)
+        
         out = torch.empty((batch_size, self.num_heads, self.sequence_length, self.sequence_length))
-        for i in range(batch_size):
-            for k in range(self.num_heads):   
-                multlipicatedWeight = (queries[i][k]).matmul(transposedKeys[i][k])
-                out[i][k] = F.softmax(torch.div(multlipicatedWeight,sqrt_HSize), 1)
+        #### NOTE:  AVOID cycles !!!!!  ##### 
+        # for i in range(batch_size):
+        #     for k in range(self.num_heads):   
+        multlipicatedWeight = queries.matmul(transposedKeys)
+        #         out[i][k] = F.softmax(torch.div(multlipicatedWeight,sqrt_HSize), 1)
+        out = F.softmax(torch.div(multlipicatedWeight,sqrt_HSize), 3)
         return out
 
     def apply_attention(self, queries, keys, values):
