@@ -141,7 +141,7 @@ def main(args):
     val_dataset = CIFAR10(root='./data', train=True, transform=test_transform, download=True)
     train_set, _ = torch.utils.data.random_split(train_dataset, [45000, 5000], generator=torch.Generator().manual_seed(args.seed))
     _, val_set = torch.utils.data.random_split(val_dataset, [45000, 5000], generator=torch.Generator().manual_seed(args.seed))
-    # Loading the test set
+ # Loading the test set
     test_set = CIFAR10(root='./data', train=False, transform=test_transform, download=True)
 
     # We define a set of data loaders that we can use for various purposes later.
